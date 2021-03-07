@@ -4,22 +4,41 @@ import (
 	"fmt"
 	"math"
 	"net/http"
+	"os"
 	"strconv"
 )
 
 func main() {
 	// Declaring Variables
-	name, email := "Hello World", "armanabkar@gmail.com"
 	var age int32 = 22
-	const isCool = true
+	name, email := "Hello World", "armanabkar@gmail.com"
+	var complexNum complex128 = complex(2, 3)
+	const isCool = true // value is known at compile time
+	const (
+		A int64 = iota
+		B
+		c
+	) // each constant is assigned to a unique int
 
-	fmt.Println(name, email)
+	// Declaring Types
+	type Celsius float64
+	var temperature Celsius = 34.0
+
+	fmt.Println(name, email, temperature, complexNum)
 
 	// Print type of variable
 	fmt.Printf("%T\n", age)
 
+	// Convert Type
+	var x int32 = 1
+	var y int16 = 2
+	x = int32(y)
+
+	// 8bit UTF codes are same as ASCII - Unicode is 32bit char
+	greet := "Hi There" // string literal
+
 	// Math Package
-	fmt.Println(math.Floor(2.7))
+	fmt.Println(math.Floor(2.7), greet, x, y)
 	fmt.Println(math.Ceil(2.7))
 	fmt.Println(math.Sqrt(2.7))
 
@@ -32,30 +51,48 @@ func main() {
 	peoples := [2]string{"Arman", "Alin"}
 	fmt.Println(peoples)
 
-	// Slices - Don't have fixed length
-	peoplesSlice := []string{"Arman", "Alin"}
-	fmt.Println(len(peoplesSlice))
+	// Slices - Don't have fixed length, contains a pointer to the array
+	peoplesSlice := []string{"Arman", "Alin", "Jessie"}
+	sli1 := peoplesSlice[0:1]
+	fmt.Println(len(peoplesSlice), cap(peoplesSlice), sli1)
+	sli2 := make([]int, 10, 15)
 
-	// Conditionals
-	x := 5
-	y := 10
-	if x < y {
-		fmt.Printf("%d is less than %d", x, y)
+	// Conditionals / Control Structures
+	x2 := 5
+	y2 := 10
+	if x2 < y2 {
+		fmt.Printf("%d is less than %d", x2, y2)
 	} else {
-		fmt.Printf("%d is bigger than %d", x, y)
+		fmt.Printf("%d is bigger than %d", x2, y2)
 	}
-
+	// Switch Statements - we don't need 'break'
 	color := "red"
 	switch color {
 	case "red":
-		fmt.Println("color is red")
+		fmt.Println("color is red", sli2)
 	case "blue":
 		fmt.Println("color is blue")
+	}
+	// tagless switch
+	switch {
+	case x > 1:
+		fmt.Println("case1")
 	}
 
 	// Loops
 	for i := 0; i < 10; i++ {
 		fmt.Print(i)
+	}
+	// similar to while
+	j := 0
+	for j < 3 {
+		fmt.Println(("hi"))
+		j++
+		if j == 5 {
+			break // will exit the loop
+		} else if j == 2 {
+			continue // won't print 2
+		}
 	}
 
 	// FizzBuzz
@@ -76,8 +113,14 @@ func main() {
 	emails["Arman"] = "armanabkar@gmail.com"
 	fmt.Println(emails["Arman"])
 	delete(emails, "Arman")
-	ages := map[string]int{"Arman": 22}
+	ages := map[string]int{"Arman": 22, "Alin": 16} // Map Literal
+	ages["Jessie"] = 3
+	delete(ages, "Sogol")
 	fmt.Println(ages["Arman"])
+	// Iterating through Map
+	for key, val := range ages {
+		fmt.Println(key, val)
+	}
 
 	// Range - and loop through ids
 	ids := []int{1, 41, 5, 2, 3}
@@ -91,9 +134,10 @@ func main() {
 	}
 	fmt.Println("Sum: ", sum)
 
-	// Pointers - for better performance
+	// Pointers - is an address to data in memory, for better performance
 	// Everything in Go is passed by value
 	a := 5
+	// & return addres of
 	b := &a
 	// b will print memory address
 	fmt.Println(a, b)
@@ -102,6 +146,9 @@ func main() {
 	// Change value with pointer
 	*b = 10
 	fmt.Println(a)
+	// new() creates var and returns a pointer
+	ptr := new(int)
+	*ptr = 3
 
 	sumClosure := adder()
 	for i := 0; i < 10; i++ {
@@ -122,6 +169,15 @@ func main() {
 	http.HandleFunc("/", index)
 	fmt.Println("Server listening on port 3000")
 	http.ListenAndServe(":3000", nil)
+
+	// Error Handling
+	f, err := os.Open("/text.txt")
+	if err != nil {
+		fmt.Println((err))
+		return
+	}
+	fmt.Println(f)
+
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
@@ -163,7 +219,7 @@ func (p *person) hasBirthday() {
 	p.age++
 }
 
-// Struct
+// Struct -> compose data types
 // Exported struct should be UpperCase
 type person struct {
 	firstName, lastName string
@@ -183,6 +239,8 @@ func adder() func(int) int {
 
 // Delcaring Functions
 func greeting(name string) string {
+	defer fmt.Println("Bye!") // deferred until the surrunding func completes
+
 	return "Hello " + name
 }
 
