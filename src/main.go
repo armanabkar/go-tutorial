@@ -1,4 +1,8 @@
-package main
+// Copyright 2021 Arman Abkar. All rights reserved.
+
+// Package is workspace (or project)
+package main // 'main' is executable package, other packages are reusable
+// use import for using other packages
 
 import (
 	"fmt"
@@ -10,8 +14,8 @@ import (
 
 func main() {
 	// Declaring Variables
-	var age int32 = 22
-	name, email := "Hello World", "armanabkar@gmail.com"
+	var age int8 = 22
+	name, email := "Arman Abkar", "armanabkar@gmail.com" // shorthand - only for initialization
 	var complexNum complex128 = complex(2, 3)
 	const isCool = true // value is known at compile time
 	const (
@@ -22,6 +26,7 @@ func main() {
 
 	// Declaring Types
 	type Celsius float64
+	type Deck []string
 	var temperature Celsius = 34.0
 
 	fmt.Println(name, email, temperature, complexNum)
@@ -51,11 +56,16 @@ func main() {
 	peoples := [2]string{"Arman", "Alin"}
 	fmt.Println(peoples)
 
-	// Slices - Don't have fixed length, contains a pointer to the array
+	// Slices - dynamic length, contains a pointer to the array
 	peoplesSlice := []string{"Arman", "Alin", "Jessie"}
-	sli1 := peoplesSlice[0:1]
+	peoplesSlice = append(peoplesSlice, "Sogol")
+	sli1 := peoplesSlice[:1] // range in slice
 	fmt.Println(len(peoplesSlice), cap(peoplesSlice), sli1)
 	sli2 := make([]int, 10, 15)
+	// Iterating through Slice
+	for i, name := range peoplesSlice {
+		fmt.Println(i, name)
+	}
 
 	// Conditionals / Control Structures
 	x2 := 5
@@ -166,9 +176,9 @@ func main() {
 	fmt.Println(person1.greet())
 
 	// Web
-	http.HandleFunc("/", index)
-	fmt.Println("Server listening on port 3000")
-	http.ListenAndServe(":3000", nil)
+	// http.HandleFunc("/", index)
+	// fmt.Println("Server listening on port 3000")
+	// http.ListenAndServe(":3000", nil)
 
 	// Error Handling
 	f, err := os.Open("/text.txt")
@@ -207,7 +217,8 @@ func getArea(s shape) float64 {
 	return s.area()
 }
 
-// Methods
+// Methods (Receiver Function)
+// by convension use first letter of type in receivers (person -> p)
 // Value Receivers
 func (p person) greet() string {
 	return "Hello, my name is " + p.firstName + " " + p.lastName + " from " + p.city + " and I'm " + strconv.Itoa(p.age)
@@ -238,10 +249,15 @@ func adder() func(int) int {
 }
 
 // Delcaring Functions
+// func funcName(x ) returnType {}
 func greeting(name string) string {
-	defer fmt.Println("Bye!") // deferred until the surrunding func completes
+	defer fmt.Println("Deferred Bye!") // deferred until the surrunding func completes
 
 	return "Hello " + name
 }
 
-// go build just compiles the executable file and moves it to the destination. go install does a little bit more. It moves the executable file to $GOPATH/bin and caches all non-main packages which are imported to $GOPATH/pkg. The cache will be used during the next compilation provided the source did not change yet.
+// go run (main.go) -> compile and execute one or two files
+// go build -> just compiles the executable file and moves it to the destination. go install does a little bit more. It moves the executable file to $GOPATH/bin and caches all non-main packages which are imported to $GOPATH/pkg. The cache will be used during the next compilation provided the source did not change yet.
+// go install -> compile and install a package
+// go get -> downloads the raw source code of a package
+// Other commands: go test, go fmt
