@@ -6,10 +6,15 @@ package main // 'main' is executable package, other packages are reusable
 
 import (
 	"fmt"
+	"io"
+	"io/ioutil"
 	"math"
+	"math/rand"
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
+	"time"
 )
 
 func main() {
@@ -34,20 +39,24 @@ func main() {
 	// Print type of variable
 	fmt.Printf("%T\n", age)
 
-	// Convert Type
+	// 8bit UTF codes are same as ASCII - Unicode is 32bit char
+	greet := "Hi There!" // string literal
+
+	// Type Conversion
 	var x int32 = 1
 	var y int16 = 2
 	x = int32(y)
-
-	// 8bit UTF codes are same as ASCII - Unicode is 32bit char
-	greet := "Hi There" // string literal
+	// Byte Slice -> represents a string! [72 105]
+	fmt.Println([]byte(greet))
 
 	// Math Package
 	fmt.Println(math.Floor(2.7), greet, x, y)
 	fmt.Println(math.Ceil(2.7))
 	fmt.Println(math.Sqrt(2.7))
 
-	fmt.Println(greeting("Arman"))
+	// extracting multiple return values
+	greetName, greetSentence := greeting("Arman")
+	fmt.Println(greetName, greetSentence)
 
 	// Arrays - have fixed length
 	var fruitArr [2]string
@@ -56,7 +65,7 @@ func main() {
 	peoples := [2]string{"Arman", "Alin"}
 	fmt.Println(peoples)
 
-	// Slices - dynamic length, contains a pointer to the array
+	// Slices - dynamic length, contains a pointer to the array(Go will create a Array in memory)
 	peoplesSlice := []string{"Arman", "Alin", "Jessie"}
 	peoplesSlice = append(peoplesSlice, "Sogol")
 	sli1 := peoplesSlice[:1] // range in slice
@@ -66,6 +75,10 @@ func main() {
 	for i, name := range peoplesSlice {
 		fmt.Println(i, name)
 	}
+
+	// Strings Package
+	joinedPeople := strings.Join([]string(peoplesSlice), ",")
+	fmt.Println(joinedPeople)
 
 	// Conditionals / Control Structures
 	x2 := 5
@@ -118,8 +131,16 @@ func main() {
 		}
 	}
 
-	// Maps - key & Value pairs
+	// Maps - key & Value pairs (and same type)
+	colors1 := map[string]string{
+		"red":   "#ff0000",
+		"white": "#ffffff",
+		"black": "#000000",
+	}
+	var colors2 map[string]string
+	fmt.Println(colors1, colors2)
 	emails := make(map[string]string)
+	// use [] to access values of Maps
 	emails["Arman"] = "armanabkar@gmail.com"
 	fmt.Println(emails["Arman"])
 	delete(emails, "Arman")
@@ -128,8 +149,8 @@ func main() {
 	delete(ages, "Sogol")
 	fmt.Println(ages["Arman"])
 	// Iterating through Map
-	for key, val := range ages {
-		fmt.Println(key, val)
+	for key, val := range colors1 {
+		fmt.Println("Hex code for", key, "is", val)
 	}
 
 	// Range - and loop through ids
@@ -145,13 +166,14 @@ func main() {
 	fmt.Println("Sum: ", sum)
 
 	// Pointers - is an address to data in memory, for better performance
-	// Everything in Go is passed by value
+	// RAM = Addresses + Values
+	// Everything in Go is passed by value, so everytime Go find new address and assign the value to it (without pointers)
 	a := 5
-	// & return addres of
+	// Turn value into address with '&value'
 	b := &a
-	// b will print memory address
+	// b will print memory address of a
 	fmt.Println(a, b)
-	// Use * to read value from address
+	// Turn address into value with '*address'
 	fmt.Println(*b)
 	// Change value with pointer
 	*b = 10
@@ -160,12 +182,16 @@ func main() {
 	ptr := new(int)
 	*ptr = 3
 
+	// Value Types: int, float, string, bool, struct, Arrays -> Use pointers to change these things in a function
+
+	// Reference Types: slices, maps, channels, pointers, functions -> Don't worry about pointers
+
 	sumClosure := adder()
 	for i := 0; i < 10; i++ {
 		fmt.Println(sumClosure(i))
 	}
 
-	// similar to javascript classes or interfaces
+	// similar to TypeScript classes (or interfaces) or objects in JS
 	person1 := person{firstName: "Arman", lastName: "Abkar", city: "Los Angeles", age: 22}
 	// person1 := person{"Arman", "Abkar", "Los Angeles", 22}
 	fmt.Println(person1)
@@ -175,19 +201,42 @@ func main() {
 	person1.hasBirthday()
 	fmt.Println(person1.greet())
 
-	// Web
+	saveToFile("HelloWorld.txt")
+	fmt.Println(readFile("HelloWorld.txt"))
+
+	// Random Number Generation
+	source := rand.NewSource(time.Now().UnixNano()) // with using time package
+	random := rand.New(source)
+	randomNumber := random.Intn(len(greet) - 1)
+	fmt.Println(randomNumber)
+
+	var person2 person
+	fmt.Println(person2)       // Default values: string="", int=0, bool=false
+	person2.firstName = "Alin" // updating values
+	fmt.Printf("%+v", person2)
+	employee1 := employee{salary: 80000, person: person{firstName: "Sogol", lastName: "Abkar", city: "Seattle", age: 35}}
+	fmt.Printf("%+v", employee1)
+
+	eb := englishBot{}
+	gb := germanBot{}
+	printGreeting(eb)
+	printGreeting(gb)
+
+	// Web & 'http' package
 	// http.HandleFunc("/", index)
 	// fmt.Println("Server listening on port 3000")
 	// http.ListenAndServe(":3000", nil)
-
-	// Error Handling
-	f, err := os.Open("/text.txt")
+	resp, err := http.Get("http://google.com")
 	if err != nil {
-		fmt.Println((err))
-		return
+		fmt.Println("Error:", err)
+		os.Exit(1)
 	}
-	fmt.Println(f)
+	// Reader Interface
+	byteSlice2 := make([]byte, 32*1024)
+	resp.Body.Read(byteSlice2)
 
+	// io.Copy function; will pass byte slice to writer interface and then source of output that implements writer interface
+	io.Copy(os.Stdout, resp.Body)
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
@@ -195,27 +244,27 @@ func index(w http.ResponseWriter, r *http.Request) {
 }
 
 // Interfaces
-type shape interface {
-	area() float64
+// implicit, are not generic types, contract to help us manage types
+type bot interface {
+	getGreeting() string
+	// getGoodbye(string) string, error
 }
-type circle struct {
-	x, y, radius float64
+type englishBot struct{}
+type germanBot struct{}
+
+func (englishBot) getGreeting() string {
+	return "\nHi There!"
 }
-type rectangle struct {
-	width, height float64
+func (germanBot) getGreeting() string {
+	return "Hallo!"
 }
 
-func (c circle) area() float64 {
-	return math.Pi * c.radius * c.radius
+// use interface in this function, now any type that have getGreeting function receiver, can use this function!
+func printGreeting(b bot) {
+	fmt.Println(b.getGreeting())
 }
 
-func (r rectangle) area() float64 {
-	return r.width * r.height
-}
-
-func getArea(s shape) float64 {
-	return s.area()
-}
+// englishBot, string, struct, int, ... are Concrete Types -> can create value directly
 
 // Methods (Receiver Function)
 // by convension use first letter of type in receivers (person -> p)
@@ -225,17 +274,26 @@ func (p person) greet() string {
 }
 
 // Pointer Receivers - for changing something
-func (p *person) hasBirthday() {
+// *person is type description; we're working with a pointer to a person
+func (pointerToPerson *person) hasBirthday() {
 	// Void func - have no return type
-	p.age++
+	// *pointerToPerson -> operator; we want to manipulate the value the pointer is referring
+	pointerToPerson.age++
 }
 
-// Struct -> compose data types
+// Struct -> compose data types, Data Structure/Collection of properties that are related together
+// no indexing, fields (can contain different types) should be known at complie time, use to represent things, value type!
 // Exported struct should be UpperCase
 type person struct {
 	firstName, lastName string
 	city                string
 	age                 int
+}
+
+// Embedding struct into another struct
+type employee struct {
+	person
+	salary int
 }
 
 // Closures
@@ -249,11 +307,28 @@ func adder() func(int) int {
 }
 
 // Delcaring Functions
-// func funcName(x ) returnType {}
-func greeting(name string) string {
+// func funcName(arg argType) returnType {}
+func greeting(name string) (string, string) {
 	defer fmt.Println("Deferred Bye!") // deferred until the surrunding func completes
 
-	return "Hello " + name
+	// return multiple values
+	return "Hello " + name, "Good Morning!"
+}
+
+// Read/Write from HardDrive
+func saveToFile(filename string) error {
+	return ioutil.WriteFile(filename, []byte("Hello World from HelloWorld.txt"), 0666)
+}
+func readFile(filename string) string {
+	byteSlice, err := ioutil.ReadFile(filename)
+
+	// Error Handling
+	if err != nil {
+		fmt.Println("Error: ", err)
+		os.Exit(1) // quit the program
+	}
+
+	return string(byteSlice)
 }
 
 // go run (main.go) -> compile and execute one or two files
