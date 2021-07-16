@@ -18,7 +18,7 @@ import (
 )
 
 func main() {
-	// Declaring Variables
+	// Declaring Variables and Constants
 	var age int8 = 22
 	name, email := "Arman Abkar", "armanabkar@gmail.com" // shorthand - only for initialization
 	var complexNum complex128 = complex(2, 3)
@@ -64,8 +64,12 @@ func main() {
 	fruitArr[1] = "Banana"
 	peoples := [2]string{"Arman", "Alin"}
 	fmt.Println(peoples)
+	fmt.Println(fruitArr[0])
 
 	// Slices - dynamic length, contains a pointer to the array(Go will create a Array in memory)
+	copyFruitArr := fruitArr[0:1]
+	copyFruitArr = append(copyFruitArr, "Cherry")
+	fmt.Println(copyFruitArr)
 	peoplesSlice := []string{"Arman", "Alin", "Jessie"}
 	peoplesSlice = append(peoplesSlice, "Sogol")
 	sli1 := peoplesSlice[:1] // range in slice
@@ -75,6 +79,8 @@ func main() {
 	for i, name := range peoplesSlice {
 		fmt.Println(i, name)
 	}
+	peoplesSlice = append(peoplesSlice, copyFruitArr...) // unpack list values
+	fmt.Println(peoplesSlice)
 
 	// Strings Package
 	joinedPeople := strings.Join([]string(peoplesSlice), ",")
@@ -83,7 +89,7 @@ func main() {
 	// Conditionals / Control Structures
 	x2 := 5
 	y2 := 10
-	if x2 < y2 {
+	if x2 < y2 && y2 > 0 {
 		fmt.Printf("%d is less than %d", x2, y2)
 	} else {
 		fmt.Printf("%d is bigger than %d", x2, y2)
@@ -119,19 +125,19 @@ func main() {
 	}
 
 	// FizzBuzz
-	for i := 1; i <= 100; i++ {
+	for i := 1; i <= 30; i++ {
 		if i%15 == 0 {
-			fmt.Println("FizzBuzz")
+			fmt.Print("FizzBuzz, ")
 		} else if i%3 == 0 {
-			fmt.Println("Fizz")
+			fmt.Print("Fizz, ")
 		} else if i%5 == 0 {
-			fmt.Println("Buzz")
+			fmt.Print("Buzz, ")
 		} else {
-			fmt.Println(i)
+			fmt.Print(i, ", ")
 		}
 	}
 
-	// Maps - key & Value pairs (and same type)
+	// Maps - key & Value pairs (and same type), dynamic
 	colors1 := map[string]string{
 		"red":   "#ff0000",
 		"white": "#ffffff",
@@ -217,6 +223,9 @@ func main() {
 	employee1 := employee{salary: 80000, person: person{firstName: "Sogol", lastName: "Abkar", city: "Seattle", age: 35}}
 	fmt.Printf("%+v", employee1)
 
+	person3 := *newPerson("Sogol", "Safieddin", "Isfahan", 30)
+	fmt.Println(person3.lastName)
+
 	eb := englishBot{}
 	gb := germanBot{}
 	printGreeting(eb)
@@ -281,6 +290,12 @@ func (pointerToPerson *person) hasBirthday() {
 	pointerToPerson.age++
 }
 
+// Creating person instance with functions
+func newPerson(firstName string, lastName string, city string, age int) *person {
+	newPerson := person{firstName, lastName, city, age}
+	return &newPerson
+}
+
 // Struct -> compose data types, Data Structure/Collection of properties that are related together
 // no indexing, fields (can contain different types) should be known at complie time, use to represent things, value type!
 // Exported struct should be UpperCase
@@ -314,6 +329,11 @@ func greeting(name string) (string, string) {
 	// return multiple values
 	return "Hello " + name, "Good Morning!"
 }
+func add(num1 int, num2 int) (sum int) {
+	// named return value (sum)
+	sum = num1 + num2
+	return
+}
 
 // Read/Write from HardDrive
 func saveToFile(filename string) error {
@@ -330,6 +350,9 @@ func readFile(filename string) string {
 
 	return string(byteSlice)
 }
+
+// Using 3rd party modules
+// install using "go get github.com/common-nighthawk/go-figure" or paste this in import() and run "go mod tidy" to fetch
 
 // go run (main.go) -> compile and execute one or two files
 // go build -> just compiles the executable file and moves it to the destination. go install does a little bit more. It moves the executable file to $GOPATH/bin and caches all non-main packages which are imported to $GOPATH/pkg. The cache will be used during the next compilation provided the source did not change yet.
